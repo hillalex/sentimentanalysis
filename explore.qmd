@@ -1,0 +1,104 @@
+---
+title: "How do people talk about pregnancy?"
+format:
+  html:
+    code-fold: false
+jupyter: python3
+---
+
+## Exploring the data
+
+To get a first idea of the distribution of sentiment scores, here are the density plots for
+the control sample and the tweets about pregnancy:
+
+```{python}
+import pandas as pd
+import matplotlib.pyplot as plt
+
+df = pd.read_csv("old/scoredalltweets.csv")
+df_preg = pd.read_csv("old/scoredpregnancytweets.csv")
+```
+
+```{python}
+fig, axes = plt.subplots(nrows=1,ncols=2)
+df[["sentiment"]].plot.density(ax = axes[0])
+df_preg[["sentiment"]].plot.density(ax = axes[1]);
+```
+
+Plotting the density of sentiment scores suggests a disproportionate percentage of values are zeros, especially
+in the control group. If we look at some tweets that are scored zero it is obvious that a lot of these scores are
+attributable to the tweet not being in English, or being spam.
+
+```{python}
+tab = df[df.sentiment == 0].tail().text
+from IPython.display import Markdown
+from tabulate import tabulate
+Markdown(tabulate(list(map(lambda x:[x], tab))))
+```
+
+Let's try and remove non-English tweets, and tweets with links in them.
+
+```{python}
+df = df[~df.text.str.contains("https://")]
+df = df[df.lang == "en"]
+
+df_preg = df_preg[~df_preg.text.str.contains("https://")]
+df_preg = df_preg[df_preg.lang == "en"]
+```
+
+If we plot the densities again, things look more reasonable now. It looks like tweets in geneal skew positive,
+but also a lot of them fail to express a sentiment that is clearly positive *or* negative, while tweets about pregnancy
+and childbirth are more readily identified as either positive or negative in tone, but fairly evenly split between the
+two.
+
+```{python}
+fig, axes = plt.subplots(nrows=1,ncols=2)
+df[["sentiment"]].plot.density(ax = axes[0])
+df_preg[["sentiment"]].plot.density(ax = axes[1]);
+```
+
+Let's check some of those zero scores tweets again:
+
+```{python}
+tab = df[df.sentiment == 0].tail().text
+from IPython.display import Markdown
+from tabulate import tabulate
+Markdown(tabulate(list(map(lambda x:[x], tab))))
+```
+
+These do seem like genuinely neutrally valenced English tweets that are not spam.
+
+The positive skew of all tweets and symmetric distribution of the keyword tweets is even clearer if looking at the
+boxplots:
+
+```{python}
+fig, axes = plt.subplots(nrows=1,ncols=2)
+df[["sentiment"]].boxplot(ax = axes[0])
+df_preg[["sentiment"]].boxplot(ax = axes[1]);
+```
+
+Ok, so what do the most negative and positive tweets about pregnancy look like?
+Here are some of the most negative tweets:
+
+```{python}
+sorted = df_preg.sort_values(by="sentiment")
+worst = sorted.head(5).text
+from IPython.display import Markdown
+from tabulate import tabulate
+Markdown(tabulate(list(map(lambda x:[x.replace("\n", " ")], worst))))
+```
+
+It looks like only one of these is actually about the experience of being pregnant.
+Two are about abortion, one is about fiction, and one is about Meghan Markle.
+
+And some of the most positive:
+
+```{python}
+best = sorted.tail(5).text
+from IPython.display import Markdown
+from tabulate import tabulate
+Markdown(tabulate(list(map(lambda x:[x.replace("\n", " ")], best))))
+```
+
+These aren't looking very relevant either, unfortunately. Three of them are about the experience of pregnancy but only
+one seems to be unambiguously positive, and one appears to be some kind of transphobia.

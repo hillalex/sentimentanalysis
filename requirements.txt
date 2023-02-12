@@ -1,0 +1,8 @@
+requests
+nltk
+matplotlib
+pandas
+jupyter
+tweepy
+tabulate
+spacy-language-detection
