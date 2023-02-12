@@ -5,4 +5,4 @@ pandas
 jupyter
 tweepy
 tabulate
-spacy-language-detection
+spacy

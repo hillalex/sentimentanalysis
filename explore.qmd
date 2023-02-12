@@ -15,8 +15,8 @@ the control sample and the tweets about pregnancy:
 import pandas as pd
 import matplotlib.pyplot as plt
 
-df = pd.read_csv("old/scoredalltweets.csv")
-df_preg = pd.read_csv("old/scoredpregnancytweets.csv")
+df = pd.read_csv("data/scoredalltweets.csv")
+df_preg = pd.read_csv("data/scoredpregnancytweets.csv")
 ```
 
 ```{python}
@@ -27,7 +27,7 @@ df_preg[["sentiment"]].plot.density(ax = axes[1]);
 
 Plotting the density of sentiment scores suggests a disproportionate percentage of values are zeros, especially
 in the control group. If we look at some tweets that are scored zero it is obvious that a lot of these scores are
-attributable to the tweet not being in English, or being spam.
+attributable to the tweet being spam.
 
 ```{python}
 tab = df[df.sentiment == 0].tail().text
@@ -36,14 +36,11 @@ from tabulate import tabulate
 Markdown(tabulate(list(map(lambda x:[x], tab))))
 ```
 
-Let's try and remove non-English tweets, and tweets with links in them.
+Let's try and remove tweets with links in them.
 
 ```{python}
 df = df[~df.text.str.contains("https://")]
-df = df[df.lang == "en"]
-
 df_preg = df_preg[~df_preg.text.str.contains("https://")]
-df_preg = df_preg[df_preg.lang == "en"]
 ```
 
 If we plot the densities again, things look more reasonable now. It looks like tweets in geneal skew positive,
@@ -60,7 +57,7 @@ df_preg[["sentiment"]].plot.density(ax = axes[1]);
 Let's check some of those zero scores tweets again:
 
 ```{python}
-tab = df[df.sentiment == 0].tail().text
+tab = df[df.sentiment == 0].head().text
 from IPython.display import Markdown
 from tabulate import tabulate
 Markdown(tabulate(list(map(lambda x:[x], tab))))
@@ -89,7 +86,7 @@ Markdown(tabulate(list(map(lambda x:[x.replace("\n", " ")], worst))))
 ```
 
 It looks like only one of these is actually about the experience of being pregnant.
-Two are about abortion, one is about fiction, and one is about Meghan Markle.
+Three are about abortion and none are about the experience of being pregnant.
 
 And some of the most positive:
 
@@ -100,5 +97,5 @@ from tabulate import tabulate
 Markdown(tabulate(list(map(lambda x:[x.replace("\n", " ")], best))))
 ```
 
-These aren't looking very relevant either, unfortunately. Three of them are about the experience of pregnancy but only
-one seems to be unambiguously positive, and one appears to be some kind of transphobia.
+These aren't looking very relevant either, unfortunately. None seem to be actually be
+about the experience of pregnancy, and none seem like their positive sentiment score is very accurate!

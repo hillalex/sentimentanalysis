@@ -21,7 +21,7 @@ all tweets with the keywords "pregnant", "pregnancy" and "childbirth" in the sam
 "alltweets.json" and "pregnancytweets.json", respectively
 2. `analyse_sentiment.py` - runs `nltk` sentiment analyser on tweets gathered by 1. and stores combined data as 
  "scoredalltweets.csv" and "scoredpregnancytweets.csv". Twitter isn't very good at returning a "lang" attribute, so 
- also add "lang" here using `nlp` package
+ also filter out non-English tweets here using `nlp` package.
 
 ## Analysis
 
