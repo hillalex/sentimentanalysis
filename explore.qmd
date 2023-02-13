@@ -13,10 +13,15 @@ the control sample and the tweets about pregnancy:
 
 ```{python}
 import pandas as pd
+import glob
+import os
 import matplotlib.pyplot as plt
 
-df = pd.read_csv("data/scoredalltweets.csv")
-df_preg = pd.read_csv("data/scoredpregnancytweets.csv")
+all_files = glob.glob(os.path.join("data", "*/scoredalltweets.csv"))
+df = pd.concat((pd.read_csv(f) for f in all_files))
+
+all_files = glob.glob(os.path.join("data", "*/scoredpregnancytweets.csv"))
+df_preg = pd.concat((pd.read_csv(f) for f in all_files))
 ```
 
 ```{python}
@@ -25,54 +30,36 @@ df[["sentiment"]].plot.density(ax = axes[0])
 df_preg[["sentiment"]].plot.density(ax = axes[1]);
 ```
 
-Plotting the density of sentiment scores suggests a disproportionate percentage of values are zeros, especially
-in the control group. If we look at some tweets that are scored zero it is obvious that a lot of these scores are
-attributable to the tweet being spam.
+There seem to be a disproportionate number of neutrally coded tweets in the control group.
+What do these look like?
 
 ```{python}
-tab = df[df.sentiment == 0].tail().text
+tab = df[df.sentiment == 0].sample(n=10).text
 from IPython.display import Markdown
 from tabulate import tabulate
-Markdown(tabulate(list(map(lambda x:[x], tab))))
+Markdown(tabulate(list(map(lambda x:[x.replace("\n", " ")], tab))))
 ```
 
-Let's try and remove tweets with links in them.
-
-```{python}
-df = df[~df.text.str.contains("https://")]
-df_preg = df_preg[~df_preg.text.str.contains("https://")]
-```
-
-If we plot the densities again, things look more reasonable now. It looks like tweets in geneal skew positive,
-but also a lot of them fail to express a sentiment that is clearly positive *or* negative, while tweets about pregnancy
-and childbirth are more readily identified as either positive or negative in tone, but fairly evenly split between the
-two.
-
-```{python}
-fig, axes = plt.subplots(nrows=1,ncols=2)
-df[["sentiment"]].plot.density(ax = axes[0])
-df_preg[["sentiment"]].plot.density(ax = axes[1]);
-```
-
-Let's check some of those zero scores tweets again:
-
-```{python}
-tab = df[df.sentiment == 0].head().text
-from IPython.display import Markdown
-from tabulate import tabulate
-Markdown(tabulate(list(map(lambda x:[x], tab))))
-```
-
-These do seem like genuinely neutrally valenced English tweets that are not spam.
+It feels like these are more unclassifiable than classifiably neutral.
 
 The positive skew of all tweets and symmetric distribution of the keyword tweets is even clearer if looking at the
-boxplots:
+boxplots, but I wonder how much this is just influenced by all these zero scores tweets.
 
 ```{python}
 fig, axes = plt.subplots(nrows=1,ncols=2)
 df[["sentiment"]].boxplot(ax = axes[0])
 df_preg[["sentiment"]].boxplot(ax = axes[1]);
 ```
+
+If we leave them out, we get:
+
+```{python}
+fig, axes = plt.subplots(nrows=1,ncols=2)
+df[df.sentiment != 0][["sentiment"]].boxplot(ax = axes[0])
+df_preg[df_preg.sentiment != 0][["sentiment"]].boxplot(ax = axes[1]);
+```
+
+These distributions look very similar.
 
 Ok, so what do the most negative and positive tweets about pregnancy look like?
 Here are some of the most negative tweets:
@@ -85,9 +72,6 @@ from tabulate import tabulate
 Markdown(tabulate(list(map(lambda x:[x.replace("\n", " ")], worst))))
 ```
 
-It looks like only one of these is actually about the experience of being pregnant.
-Three are about abortion and none are about the experience of being pregnant.
-
 And some of the most positive:
 
 ```{python}
@@ -98,4 +82,4 @@ Markdown(tabulate(list(map(lambda x:[x.replace("\n", " ")], best))))
 ```
 
 These aren't looking very relevant either, unfortunately. None seem to be actually be
-about the experience of pregnancy, and none seem like their positive sentiment score is very accurate!
+about the experience of pregnancy. A lot are just about celebrity gossip.

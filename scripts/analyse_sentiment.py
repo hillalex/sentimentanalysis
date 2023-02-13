@@ -1,3 +1,4 @@
+import os
 from nltk.sentiment import SentimentIntensityAnalyzer
 import nltk
 import pandas as pd
@@ -19,13 +20,15 @@ Language.factory("language_detector", func=get_lang_detector)
 nlp.add_pipe('language_detector', last=True)
 
 
-def annotate_and_save(filename_in, filenam_out):
-    df = pd.read_json("../data/{}.json".format(filename_in))
-    df["sentiment"] = df.apply(lambda row: sia.polarity_scores(row["text"])["compound"], axis=1)
+def annotate_and_save(sub_dir, filename_in, filenam_out):
+    df = pd.read_json("data/{}/{}.json".format(sub_dir, filename_in))
     df["lang"] = df.apply(lambda row: nlp(row["text"])._.language["language"], axis=1)
     df = df[df.lang == "en"]
-    df[["created_at", "text", "sentiment", "lang"]].to_csv("../data/{}.csv".format(filenam_out), index=False)
+    df["sentiment"] = df.apply(lambda row: sia.polarity_scores(row["text"])["compound"], axis=1)
+    df[["created_at", "text", "sentiment"]].to_csv("data/{}/{}.csv".format(sub_dir, filenam_out), index=False)
 
 
-annotate_and_save("pregnancytweets", "scoredpregnancytweets")
-annotate_and_save("alltweets", "scoredalltweets")
+for subdir in os.listdir("data"):
+    if "scoredpregnancytweets.csv" not in os.listdir("data/{}".format(subdir)):
+        annotate_and_save(subdir, "pregnancytweets", "scoredpregnancytweets")
+        annotate_and_save(subdir, "alltweets", "scoredalltweets")

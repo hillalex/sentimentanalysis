@@ -17,11 +17,9 @@ an environment variable named `TWITTER_BEARER_TOKEN`:
 ```export TWITTER_BEARER_TOKEN=<xxxxxxx>```
 
 1. `get_tweets.py` - downloads 5 minutes worth of data from the Twitter API V2 sample stream, and 
-all tweets with the keywords "pregnant", "pregnancy" and "childbirth" in the same period and stores in `data` folder as
-"alltweets.json" and "pregnancytweets.json", respectively
-2. `analyse_sentiment.py` - runs `nltk` sentiment analyser on tweets gathered by 1. and stores combined data as 
- "scoredalltweets.csv" and "scoredpregnancytweets.csv". Twitter isn't very good at returning a "lang" attribute, so 
- also filter out non-English tweets here using `nlp` package.
+all tweets with the keywords "pregnancy" and "childbirth" in the same period and stores in `data` folder in a timestamped subdirectory.
+2. `analyse_sentiment.py` - runs `nltk` sentiment analyser on tweets gathered by 1. and stores combined data as csvs. 
+Twitter isn't very good at returning a "lang" attribute, so also filter out non-English tweets here using `nlp` package.
 
 ## Analysis
 
