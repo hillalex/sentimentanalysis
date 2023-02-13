@@ -42,7 +42,7 @@ Markdown(tabulate(list(map(lambda x:[x.replace("\n", " ")], tab))))
 
 It feels like these are more unclassifiable than classifiably neutral.
 
-The positive skew of all tweets and symmetric distribution of the keyword tweets is even clearer if looking at the
+The positive skew of all tweets and more symmetric distribution of the keyword tweets is even clearer if looking at the
 boxplots, but I wonder how much this is just influenced by all these zero scores tweets.
 
 ```{python}
@@ -54,9 +54,11 @@ df_preg[["sentiment"]].boxplot(ax = axes[1]);
 If we leave them out, we get:
 
 ```{python}
+df = df[df.sentiment != 0]
+df_preg = df_preg[df_preg.sentiment != 0]
 fig, axes = plt.subplots(nrows=1,ncols=2)
-df[df.sentiment != 0][["sentiment"]].boxplot(ax = axes[0])
-df_preg[df_preg.sentiment != 0][["sentiment"]].boxplot(ax = axes[1]);
+df[["sentiment"]].boxplot(ax = axes[0])
+df_preg[["sentiment"]].boxplot(ax = axes[1]);
 ```
 
 These distributions look very similar.
@@ -72,6 +74,7 @@ from tabulate import tabulate
 Markdown(tabulate(list(map(lambda x:[x.replace("\n", " ")], worst))))
 ```
 
+A lot of these seem to be about political issues like abortion or trans rights.
 And some of the most positive:
 
 ```{python}
@@ -83,3 +86,44 @@ Markdown(tabulate(list(map(lambda x:[x.replace("\n", " ")], best))))
 
 These aren't looking very relevant either, unfortunately. None seem to be actually be
 about the experience of pregnancy. A lot are just about celebrity gossip.
+
+Does removing mentions of Rhianna and Beyonce, as well as abortion and trans people,
+ from the data change the distribution at all?
+
+```{python}
+df_preg_1 = df_preg[~df_preg.text.str.contains("rhi|rih|riri|bey|trans|abort", case=False, regex=True)]
+fig, axes = plt.subplots(nrows=1,ncols=2)
+df_preg[["sentiment"]].boxplot(ax = axes[0])
+df_preg_1[["sentiment"]].boxplot(ax = axes[1]);
+```
+
+```{python}
+sorted = df_preg_1.sort_values(by="sentiment")
+worst = sorted.head(10).text
+from IPython.display import Markdown
+from tabulate import tabulate
+Markdown(tabulate(list(map(lambda x:[x.replace("\n", " ")], worst))))
+```
+
+These do seem a lot more relevant, and correctly scored as negative.
+
+```{python}
+sorted = df_preg_1.sort_values(by="sentiment")
+best = sorted.tail(10).text
+from IPython.display import Markdown
+from tabulate import tabulate
+Markdown(tabulate(list(map(lambda x:[x.replace("\n", " ")], best))))
+```
+
+These seem relevant, although it does look like the scoring is off; at least 2 of the top 10 most positively
+rated tweets are clearly expressing negative sentiments.
+
+Comparing the improved set with the control set now:
+
+```{python}
+fig, axes = plt.subplots(nrows=1,ncols=2)
+df_preg[["sentiment"]].boxplot(ax = axes[0])
+df_preg_1[["sentiment"]].boxplot(ax = axes[1]);
+```
+
+Looks like chat about pregnancy on Twitter is remarkably balanced.
